@@ -63,16 +63,7 @@ unsigned int targetIP = 0;
 	dispatch_block_t extractKeysBlock = dispatch_block_create(DISPATCH_BLOCK_INHERIT_QOS_CLASS, ^{
         NRLinkDirector *director = [objc_getClass("NRLinkDirector") copySharedLinkDirector];
 
-        //NRDLDKeys *classCKeys = [objc_getClass("NRDLocalDevice") classCKeys];
-        //NRDLDKeys *classDKeys = [objc_getClass("NRDLocalDevice") classDKeys];
-
-        //NSData *publicClassA = (NSData *) [classAKeys remotePublicKey];
-        //NSData *publicClassC = (NSData *) [classCKeys remotePublicKey];
-        //NSData *publicClassD = (NSData *) [classDKeys remotePublicKey];
-
-        //NSLog(@"WWitch: class c public key %@", publicClassC);
-        //NSLog(@"WWitch: class d public key %@", publicClassD);
-
+        
         //NSLog(@"WWitch: %@", [objc_getClass("NRDLocalDevice") copyStatusString]);
         NSUUID *uuid = nil;
   
@@ -95,24 +86,33 @@ unsigned int targetIP = 0;
         NSData *privateClassC = (NSData *) [classCKeys localPrivateKey];
         NSData *privateClassD = (NSData *) [classDKeys localPrivateKey];
 
-        /*NSLog(@"WWitch: class A public: %@", publicClassA);
-        NSLog(@"WWitch: class C public: %@", publicClassC);
-        NSLog(@"WWitch: class D public: %@", publicClassD);
-        NSLog(@"WWitch: class A private: %@", privateClassA);
-        NSLog(@"WWitch: class C private: %@", privateClassC);
-        NSLog(@"WWitch: class D private: %@", privateClassD);*/
+        NSString *localAddressClassC = (NSString *) [device copyLocalClassCAddressString];
+        NSString *localAddressClassD = (NSString *) [device copyLocalClassDAddressString];
 
-        unsigned char chunk[192];
-        memcpy(&chunk, publicClassA.bytes, 32);
-        memcpy(&chunk[32], publicClassC.bytes, 32);
-        memcpy(&chunk[64], publicClassD.bytes, 32);
-        memcpy(&chunk[96], privateClassA.bytes, 32); 
-        memcpy(&chunk[128], privateClassC.bytes, 32); 
-        memcpy(&chunk[160], privateClassD.bytes, 32); 
+        NSString *remoteAddressClassC = (NSString *) [device copyRemoteClassCAddressString];
+        NSString *remoteAddressClassD = (NSString *) [device copyRemoteClassDAddressString];
 
-        NSString *notificationName = @"net.rec0de.ios.watchwitch/Keys/";
-    	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), (CFNotificationName) notificationName, nil, nil, true);
+        NSLog(@"WWitch: local class C address %@", localAddressClassC);
+        NSLog(@"WWitch: local class D address %@", localAddressClassD);
+        NSLog(@"WWitch: remote class C address %@", remoteAddressClassC);
+        NSLog(@"WWitch: remote class D address %@", remoteAddressClassD);
 
+
+        [preferences setObject: publicClassA forKey:@"publicClassA"];
+        [preferences setObject: publicClassC forKey:@"publicClassC"];
+        [preferences setObject: publicClassD forKey:@"publicClassD"];
+
+        [preferences setObject: privateClassA forKey:@"privateClassA"];
+        [preferences setObject: privateClassC forKey:@"privateClassC"];
+        [preferences setObject: privateClassD forKey:@"privateClassD"];
+
+        [preferences setObject: localAddressClassC forKey:@"localAddressClassC"];
+        [preferences setObject: localAddressClassD forKey:@"localAddressClassD"];
+        [preferences setObject: remoteAddressClassC forKey:@"remoteAddressClassC"];
+        [preferences setObject: remoteAddressClassD forKey:@"remoteAddressClassD"];
+
+        NSString *notificationName = @"net.rec0de.ios.watchwitch/ReloadPrefs";
+        CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), (CFNotificationName) notificationName, nil, nil, true);
     });
 
     [preferences registerPreferenceChangeBlockForKey:@"keyExtractTrigger" block:^(NSString *key, id<NSCopying> _Nullable value){
