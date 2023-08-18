@@ -10,6 +10,7 @@
 #import "NRDLDKeys.h"
 #import "IDSPairingManager.h"
 #import "IDSPairedDevice.h"
+#import "IDSRegistrationKeyManager.h"
 
 HBPreferences *preferences;
 BOOL rerouteEnabled;
@@ -166,15 +167,25 @@ int stringendswith(const char *s, const char *t) {
             NSDictionary *pairedDevice = [pairingManager pairedDevice];
 
             NSString *localUUID = localDevice[@"ids-identifier"];
-            NSData *privateClassA = (NSData *) localDevice[@"encryption-key-class-a"];
-            NSString *encodedClassAPrivate = [privateClassA base64EncodedStringWithOptions:0];
-
             NSLog(@"WWitch: local UUID %@", localUUID);
-            NSLog(@"WWitch: local classA %@", encodedClassAPrivate);
-
-            [preferences setObject: encodedClassAPrivate forKey:@"idsLocalClassA"];
             [preferences setObject: localUUID forKey:@"idsLocalUUID"];
             
+
+
+            IDSRegistrationKeyManager *keyManager = [objc_getClass("IDSRegistrationKeyManager") sharedInstance];
+
+            // Class A: 1, Class C: 0, Class D: 2
+            void *fi = [keyManager latestCopyMessageProtectionIdentityForDataProtectionClass:1];
+
+            SecKeyRef *ecdsaPriv = (SecKeyRef *) (fi+0x18);
+            SecKeyRef *rsaPriv = (SecKeyRef *) (fi+0x28);
+            NSData *ecdsaPrivExported = CFBridgingRelease(SecKeyCopyExternalRepresentation(*ecdsaPriv, 0));
+            NSData *rsaPrivExported = CFBridgingRelease(SecKeyCopyExternalRepresentation(*rsaPriv, 0));
+            NSLog(@"WWitch: ecdsaPriv %@", ecdsaPrivExported);
+            NSLog(@"WWitch: rsaPriv %@", rsaPrivExported);
+            [preferences setObject: ecdsaPrivExported forKey:@"idsLocalClassAEcdsa"];
+            [preferences setObject: rsaPrivExported forKey:@"idsLocalClassARsa"];
+
 
             if(pairedDevice == 0) {
                 NSLog(@"WWitch: pairedDevice is null, are you connected to an apple watch?");
