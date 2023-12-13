@@ -8,6 +8,9 @@ Make sure [Theos](https://theos.dev/docs/) is installed on your computer. Depend
 
 Install the tweak:
 ```
+iproxy 2222 22
+export THEOS_DEVICE_IP=localhost
+export THEOS_DEVICE_PORT=2222
 make package install
 ```
 
