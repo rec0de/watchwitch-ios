@@ -18,6 +18,7 @@ BOOL startupComplete = false;
 BOOL keyExtractStartupComplete = false;
 NSInteger spoofTrigger = 0;
 unsigned int targetIP = 0;
+unsigned int keyUpdateTrigger = 0;
 
 int stringendswith(const char *s, const char *t) {
     size_t slen = strlen(s);
@@ -127,6 +128,11 @@ int stringendswith(const char *s, const char *t) {
             [preferences setObject: localAddressClassD forKey:@"localAddressClassD"];
             [preferences setObject: remoteAddressClassC forKey:@"remoteAddressClassC"];
             [preferences setObject: remoteAddressClassD forKey:@"remoteAddressClassD"];
+
+            keyUpdateTrigger++;
+            [preferences setUnsignedInteger: keyUpdateTrigger forKey:@"keysupdated"];
+            NSLog(@"WWitch: set keysupdated to %u", keyUpdateTrigger);
+
 
             NSString *notificationName = @"net.rec0de.ios.watchwitch/ReloadPrefs";
             CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), (CFNotificationName) notificationName, nil, nil, true);
